@@ -1,0 +1,45 @@
+flowchart TB
+    subgraph Signup["Signup Flow"]
+        S1["User visits signup page"] --> S2{Email exists?}
+        S2 -->|No| S3["Create user with passwordHash"]
+        S2 -->|Yes, no password| S4["Add password to existing user"]
+        S2 -->|Yes, has password| S5["Error: Account exists"]
+        S3 --> S6["Create verification token"]
+        S4 --> S7["Mark as verified"]
+        S6 --> S8["Send verification email"]
+        S8 --> S9["Show verification pending"]
+        S7 --> S10["Redirect to signin"]
+    end
+
+    subgraph Verify["Email Verification"]
+        V1["User clicks email link"] --> V2["Verify email page"]
+        V2 --> V3{Token valid?}
+        V3 -->|Yes| V4["Set emailVerified = now"]
+        V3 -->|No/Expired| V5["Show error + resend"]
+        V4 --> V6["Redirect to signin"]
+    end
+
+    subgraph Signin["Signin Flow"]
+        L1["User visits signin"] --> L2["Enter email + password"]
+        L2 --> L3{Credentials valid?}
+        L3 -->|No| L4["Error: Invalid credentials"]
+        L3 -->|Yes| L5{Email verified?}
+        L5 -->|No| L6["Error: Please verify email"]
+        L5 -->|Yes| L7["Create session"]
+        L7 --> L8["Redirect to dashboard"]
+    end
+
+    subgraph Reset["Password Reset"]
+        R1["User clicks Forgot Password"] --> R2["Forgot password page"]
+        R2 --> R3["Enter email"]
+        R3 --> R4["Create reset token"]
+        R4 --> R5["Send reset email"]
+        R5 --> R6["User clicks email link"]
+        R6 --> R7["Reset password page"]
+        R7 --> R8{Token valid?}
+        R8 -->|Yes| R9["Enter new password"]
+        R8 -->|No/Expired| R10["Error: Token expired"]
+        R9 --> R11["Update passwordHash"]
+        R11 --> R12["Invalidate all sessions"]
+        R12 --> R13["Redirect to signin"]
+    end
